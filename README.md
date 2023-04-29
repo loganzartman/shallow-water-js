@@ -1,1 +1,3 @@
-spent a couple hours prompting chatGPT to write code, with roughly this outcome already in mind. GPT wrote all the code, I just copy and pasted things and debugged it.
+# wavesbygpt
+
+Shallow water simulation using a classic very simple algorithm. Has fake refraction and a simpler verison of evanw's caustics rendering. I prompted chatGPT to write most of it and then refactored and optimized it by hand.
