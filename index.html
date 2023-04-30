@@ -43,16 +43,22 @@
     gui.add(params, 'fastRefractions');
     gui.add(params, 'fastCaustics');
 
-    const maxDim = Math.max(window.innerWidth, window.innerHeight);
-    const maxRes = 256;
     const canvas = document.getElementById('canvas');
-    const width = canvas.width = Math.round(window.innerWidth / maxDim * maxRes);
-    const height = canvas.height = Math.round(window.innerHeight / maxDim * maxRes);
     const ctx = canvas.getContext('2d', {willReadFrequently: true});
-    const imageDataCopy = ctx.getImageData(0, 0, width, height);
 
-    let grid = new Float64Array(width * height);
-    let grid2 = new Float64Array(width * height);
+    let grid, grid2, width, height, imageDataCopy;
+
+    function resize() {
+        const maxRes = 256;
+        const maxDim = Math.max(window.innerWidth, window.innerHeight);
+        width = canvas.width = Math.round(window.innerWidth / maxDim * maxRes);
+        height = canvas.height = Math.round(window.innerHeight / maxDim * maxRes);
+        grid = new Float32Array(width * height);
+        grid2 = new Float32Array(width * height);
+        imageDataCopy = ctx.getImageData(0, 0, width, height);
+    }
+    resize();
+    window.addEventListener('resize', () => resize(), false);
 
     function propagate() {
         const damping = params.damping
