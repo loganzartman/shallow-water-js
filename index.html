@@ -20,20 +20,20 @@
 <script src="https://cdn.jsdelivr.net/npm/dat.gui@0.7.7/build/dat.gui.min.js"></script>
 <script>
     function Parameters() {
-        this.damping = 0.95;
+        this.damping = 0.98;
         this.checkerSize = 20;
-        this.refractionStrength = 2;
-        this.causticStrength = 0.2;
+        this.refractionStrength = 1;
+        this.causticStrength = 0.4;
         this.increase = 30;
         this.radius = 10;
         this.height = 50;
-        this.fastRefractions = true;
-        this.fastCaustics = true;
+        this.fastRefractions = false;
+        this.fastCaustics = false;
     }
 
     const params = new Parameters();
     const gui = new dat.GUI();
-    gui.add(params, 'damping', 0.1, 1.0);
+    gui.add(params, 'damping', 0.9, 1.0, 0.001);
     gui.add(params, 'checkerSize', 2, 50);
     gui.add(params, 'refractionStrength', 0, 2);
     gui.add(params, 'causticStrength', 0, 2);
