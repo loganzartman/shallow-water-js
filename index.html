@@ -31,7 +31,7 @@
     }
 
     const params = new Parameters();
-    const gui = new dat.GUI();
+    const gui = new dat.GUI({closed: true});
     gui.add(params, 'damping', 0.9, 1.0, 0.001);
     gui.add(params, 'checkerSize', 2, 50);
     gui.add(params, 'refractionStrength', 0, 2);
