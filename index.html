@@ -47,7 +47,7 @@
     canvas.height = 192;
     canvas.style.width = '100%';  // scale to fill screen
     canvas.style.height = '100%';
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', {willReadFrequently: true});
     const imageDataCopy = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
     let grid = new Array(canvas.width).fill(0).map(() => new Array(canvas.height).fill(0));
