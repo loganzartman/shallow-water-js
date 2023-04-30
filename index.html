@@ -26,6 +26,8 @@
         this.increase = 30;
         this.radius = 10;
         this.height = 50;
+        this.fastRefractions = true;
+        this.fastCaustics = true;
     }
 
     const params = new Parameters();
@@ -37,6 +39,8 @@
     gui.add(params, 'increase', 0, 100);
     gui.add(params, 'radius', 1, 100, 1);
     gui.add(params, 'height', 1, 100);
+    gui.add(params, 'fastRefractions');
+    gui.add(params, 'fastCaustics');
 
     const canvas = document.getElementById('canvas');
     canvas.width = 256;  // size of simulation grid
@@ -109,19 +113,28 @@
                     const offsetY = y + dy * causticStrength;
                     const offsetPos = (Math.floor(offsetY) * canvas.width + Math.floor(offsetX)) * 4;
 
-                    // Bilinear interpolation weights
-                    const weightX = offsetX - Math.floor(offsetX);
-                    const weightY = offsetY - Math.floor(offsetY);
 
-                    // Increase brightness at the 4 surrounding integer positions
                     const increase = params.increase;  // Change this to adjust the brightness increase
-                    for (let i = 0; i <= 1; i++) {
-                        for (let j = 0; j <= 1; j++) {
-                            const currentPos = ((Math.floor(offsetY) + i) * canvas.width + Math.floor(offsetX) + j) * 4;
-                            const weight = (1 - Math.abs(i - weightY)) * (1 - Math.abs(j - weightX));
-                            writeData[currentPos] = Math.min(255, writeData[currentPos] + increase * weight);
-                            writeData[currentPos + 1] = Math.min(255, writeData[currentPos + 1] + increase * weight);
-                            writeData[currentPos + 2] = Math.min(255, writeData[currentPos + 2] + increase * weight);
+
+                    if (params.fastCaustics) {
+                        const currentPos = (Math.round(offsetY) * canvas.width + Math.round(offsetX)) * 4;
+                        writeData[currentPos] = Math.min(255, writeData[currentPos] + increase);
+                        writeData[currentPos + 1] = Math.min(255, writeData[currentPos + 1] + increase);
+                        writeData[currentPos + 2] = Math.min(255, writeData[currentPos + 2] + increase);
+                    } else {
+                        // Bilinear interpolation weights
+                        const weightX = offsetX - Math.floor(offsetX);
+                        const weightY = offsetY - Math.floor(offsetY);
+
+                        // Increase brightness at the 4 surrounding integer positions
+                        for (let i = 0; i <= 1; i++) {
+                            for (let j = 0; j <= 1; j++) {
+                                const currentPos = ((Math.floor(offsetY) + i) * canvas.width + Math.floor(offsetX) + j) * 4;
+                                const weight = (1 - Math.abs(i - weightY)) * (1 - Math.abs(j - weightX));
+                                writeData[currentPos] = Math.min(255, writeData[currentPos] + increase * weight);
+                                writeData[currentPos + 1] = Math.min(255, writeData[currentPos + 1] + increase * weight);
+                                writeData[currentPos + 2] = Math.min(255, writeData[currentPos + 2] + increase * weight);
+                            }
                         }
                     }
                 }
@@ -148,12 +161,36 @@
                     let refY = y - dy * refractionStrength;
                     refX = Math.min(canvas.width - 1, Math.max(0, refX));
                     refY = Math.min(canvas.height - 1, Math.max(0, refY));
-                    const displacement = (Math.floor(refY) * canvas.width + Math.floor(refX)) * 4;
                     const originalPos = (y * canvas.width + x) * 4;
-                    writeData[originalPos] = readData[displacement];
-                    writeData[originalPos + 1] = readData[displacement + 1];
-                    writeData[originalPos + 2] = readData[displacement + 2];
-                    writeData[originalPos + 3] = 255; // Make sure the alpha channel is fully opaque
+
+                    if (params.fastRefractions) {
+                        const displacement = (Math.floor(refY) * canvas.width + Math.floor(refX)) * 4;
+                        writeData[originalPos] = readData[displacement];
+                        writeData[originalPos + 1] = readData[displacement + 1];
+                        writeData[originalPos + 2] = readData[displacement + 2];
+                        writeData[originalPos + 3] = 255; // Make sure the alpha channel is fully opaque
+                    } else {
+                        // Bilinear interpolation weights
+                        const weightX = refX - Math.floor(refX);
+                        const weightY = refY - Math.floor(refY);
+
+                        let sampleR = 0, sampleG = 0, sampleB = 0;
+                        for (let i = 0; i <= 1; i++) {
+                            for (let j = 0; j <= 1; j++) {
+                                const displacedX = Math.min(canvas.width - 1, Math.max(0, Math.floor(refX) + j));
+                                const displacedY = Math.min(canvas.height - 1, Math.max(0, Math.floor(refY) + i));
+                                const displaced = (displacedY * canvas.width + displacedX) * 4;
+                                const weight = (1 - Math.abs(i - weightY)) * (1 - Math.abs(j - weightX));
+                                sampleR += readData[displaced] * weight;
+                                sampleG += readData[displaced + 1] * weight;
+                                sampleB += readData[displaced + 2] * weight;
+                            }
+                        }
+                        writeData[originalPos] = Math.round(sampleR);
+                        writeData[originalPos + 1] = Math.round(sampleG);
+                        writeData[originalPos + 2] = Math.round(sampleB);
+                        writeData[originalPos + 3] = 255; // Make sure the alpha channel is fully opaque
+                    }
                 }
             }
         }
