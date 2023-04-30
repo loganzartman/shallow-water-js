@@ -43,9 +43,11 @@
     gui.add(params, 'fastRefractions');
     gui.add(params, 'fastCaustics');
 
+    const maxDim = Math.max(window.innerWidth, window.innerHeight);
+    const maxRes = 256;
     const canvas = document.getElementById('canvas');
-    const width = canvas.width = 256;  // size of simulation grid
-    const height = canvas.height = 192;
+    const width = canvas.width = Math.round(window.innerWidth / maxDim * maxRes);
+    const height = canvas.height = Math.round(window.innerHeight / maxDim * maxRes);
     canvas.style.width = '100%';  // scale to fill screen
     canvas.style.height = '100%';
     const ctx = canvas.getContext('2d', {willReadFrequently: true});
